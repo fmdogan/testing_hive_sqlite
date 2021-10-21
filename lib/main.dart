@@ -1,8 +1,11 @@
 // ignore_for_file: avoid_print
 
+import 'dart:convert';
+
 import 'package:db_test/db_helpers/sqlite_helpers.dart';
 import 'package:db_test/model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'db_helpers/hive_helpers.dart';
@@ -37,7 +40,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<Message> myMessages = [];
   final dbHelper = DatabaseHelper.instance;
-/*
+
   final _hiveHelper = HiveHelpers();
   late Box<Message> box;
 
@@ -69,13 +72,55 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   openBox() async {
-    print('openBox: ' + DateTime.now().toString());
-    box = await Hive.openBox<Message>('messages', ).whenComplete(
-      () => print('openBox: ' + DateTime.now().toString()),
+    var key = Hive.generateSecureKey();
+    var _key = base64UrlEncode(key);
+    var encryptionKey = base64Url.decode(_key);
+    print(key);
+    print(_key);
+    print('Encryption key: $encryptionKey');
+
+    print('openBox:    ' + DateTime.now().toString());
+    box = await Hive.openBox<Message>('messages',
+        encryptionCipher: HiveAesCipher([
+          166,
+          111,
+          88,
+          214,
+          70,
+          51,
+          179,
+          61,
+          11,
+          38,
+          179,
+          232,
+          232,
+          178,
+          22,
+          7,
+          157,
+          247,
+          224,
+          211,
+          2,
+          81,
+          214,
+          143,
+          142,
+          68,
+          104,
+          44,
+          0,
+          96,
+          51,
+          247
+        ])).whenComplete(
+      () => print('opened box: ' + DateTime.now().toString()),
     );
     print(box.length);
-  }*/
+  }
 
+/*
   void _insertSql() async {
     print('insert 5k starts: ' + DateTime.now().toString());
     await dbHelper.insertMyMessages().whenComplete(() async {
@@ -106,14 +151,14 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     });
   }
-
+*/
   @override
   void initState() {
     super.initState();
-    getMessages();
-    //var _hiveHelper = HiveHelpers();
-    //_hiveHelper.hiveRagisterAdaptor();
-    //_hiveHelper.initialize().whenComplete(() => openBox());
+    //getMessages();
+    var _hiveHelper = HiveHelpers();
+    _hiveHelper.hiveRagisterAdaptor();
+    _hiveHelper.initialize().whenComplete(() => openBox());
   }
 
   @override
@@ -138,11 +183,11 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
-            onPressed: _deleteSql,
+            onPressed: _deleteHive,
             child: const Icon(Icons.remove),
           ),
           FloatingActionButton(
-            onPressed: _insertSql,
+            onPressed: _insertHive,
             child: const Icon(Icons.add),
           ),
         ],

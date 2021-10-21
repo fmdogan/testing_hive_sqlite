@@ -5,7 +5,7 @@ List<Message> getMessages() {
     return Message(
       id: index,
       chatId: 1,
-      text: 'text $index',
+      text: 'my long text: blablablablablablabla $index',
       sender: 'senderID',
       time: DateTime.now(),
       seenTime: DateTime.now(),
